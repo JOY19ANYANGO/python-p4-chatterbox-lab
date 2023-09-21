@@ -25,7 +25,7 @@ def messages():
         response =make_response(messages_list,200)
         return response
     elif request.method == 'POST':
-        data=request.json
+        data=request.get_json()
         new_message = Message(
             body=data.get("body"),
             username=data.get("username")

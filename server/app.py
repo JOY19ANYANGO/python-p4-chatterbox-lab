@@ -36,30 +36,56 @@ def messages():
         new_message_dict=new_message.to_dict()
         response = make_response(new_message_dict,201)
         return response
-@app.route('/messages/<int:id>', methods=['PATCH', 'DELETE'])
-def messages_by_id(id):
-    message = Message.query.filter_by(id=id).first()
+@app.route('/messages/<int:num>', methods=['PATCH', 'DELETE', 'GET'])
+def messages_by_id(num):
+
+    message = Message.query.filter_by(id=num).first()
+
     if request.method == 'PATCH':
-        for attr in request.form:
-            setattr(message, attr, request.form.get(attr))
+        data = request.get_json()
+        for attr in data:
+            setattr(message, attr, data[attr])
+
         db.session.add(message)
         db.session.commit()
-        message_dict = message.to_dict()
-        response = make_response(message_dict, 201)
-        return  response
-    elif request.method == "DELETE":
+
+        message_serialized = message.to_dict()
+
+        response = make_response(
+            jsonify(message_serialized),
+            200
+        )
+
+        return response
+
+    if request.method == 'DELETE':
         db.session.delete(message)
         db.session.commit()
 
         response_body = {
             "delete_successful": True,
-            "message": "Message successfully deleted."
+            "message": "Message deleted."
         }
 
-        response = make_response(response_body,200)
+        response = make_response(
+            jsonify(response_body),
+            200
+        )
 
         return response
 
+    if request.method == 'GET':
+
+        message_serialized = message.to_dict()
+
+        response = make_response(
+            jsonify(message_serialized),
+            200
+        )
+
+        return response
+
+    return None
 
 
 if __name__ == '__main__':
